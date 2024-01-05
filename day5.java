@@ -1,6 +1,7 @@
 /* Advent of Code 2023, Day 5: If You Give A Seed A Fertilizer
  * Adrien Abbey, Jan. 2024
  * Part One Solution: 218513636
+ * Part Two Solution: 81956384
  */
 
 import java.io.File;
@@ -12,14 +13,15 @@ import java.util.Scanner;
 class day5 {
     /* Global Variables */
     public static String inputFileName = "input.txt";
-    public static boolean testing = true;
+    public static boolean testing = false;
+    public static boolean partTwo = true;
 
     public static void main(String[] args) throws FileNotFoundException {
         // Load the input into an array of strings:
         ArrayList<String> inputStrings = loadInputStrings();
 
         // Create array lists to hold relevant data:
-        ArrayList<Long> seeds = new ArrayList<>();
+        ArrayList<Long> seeds = null;
         ArrayList<Long[]> seedToSoilMap = null;
         ArrayList<Long[]> soilToFertilizerMap = null;
         ArrayList<Long[]> fertilizerToWaterMap = null;
@@ -107,31 +109,57 @@ class day5 {
         // We want to find the lowest location number of any of the initial seeds:
         long lowestLocation = Long.MAX_VALUE;
 
-        // Start finding the location of each seed:
-        for (long seed : seeds) {
-            long soil = parseMap(seedToSoilMap, seed);
-            long fertilizer = parseMap(soilToFertilizerMap, soil);
-            long water = parseMap(fertilizerToWaterMap, fertilizer);
-            long light = parseMap(waterToLightMap, water);
-            long temperature = parseMap(lightToTemperatureMap, light);
-            long humidity = parseMap(temperatureToHumidityMap, temperature);
-            long location = parseMap(humidityToLocationMap, humidity);
+        // If using Part One's method:
+        if (!partTwo) {
+            // Start finding the location of each seed:
+            for (long seed : seeds) {
+                long soil = parseMap(seedToSoilMap, seed);
+                long fertilizer = parseMap(soilToFertilizerMap, soil);
+                long water = parseMap(fertilizerToWaterMap, fertilizer);
+                long light = parseMap(waterToLightMap, water);
+                long temperature = parseMap(lightToTemperatureMap, light);
+                long humidity = parseMap(temperatureToHumidityMap, temperature);
+                long location = parseMap(humidityToLocationMap, humidity);
 
-            // Test code:
-            if (testing) {
-                System.out.println("Seed: " + seed);
-                System.out.println(" Soil: " + soil);
-                System.out.println(" Fertilizer: " + fertilizer);
-                System.out.println(" Water: " + water);
-                System.out.println(" Light: " + light);
-                System.out.println(" Temperature: " + temperature);
-                System.out.println(" Humidity: " + humidity);
-                System.out.println(" Location: " + location);
+                // Test code:
+                if (testing) {
+                    System.out.println("Seed: " + seed);
+                    System.out.println(" Soil: " + soil);
+                    System.out.println(" Fertilizer: " + fertilizer);
+                    System.out.println(" Water: " + water);
+                    System.out.println(" Light: " + light);
+                    System.out.println(" Temperature: " + temperature);
+                    System.out.println(" Humidity: " + humidity);
+                    System.out.println(" Location: " + location);
+                }
+
+                // Update the lowest location if necesary:
+                if (location < lowestLocation) {
+                    lowestLocation = location;
+                }
             }
+        } else {
+            // Using part two's method.
 
-            // Update the lowest location if necesary:
-            if (location < lowestLocation) {
-                lowestLocation = location;
+            // Treat the seed values as pairs.
+            // Start with the first index value, adding two each round:
+            for (long i = 0; i < seeds.size(); i += 2) {
+                // The second value of a seed pair is the range of seed values
+                // to calculate. Calculate every seed value, from the starting
+                // seed to the ending seed:
+                for (long j = seeds.get((int) i); j <= seeds.get((int) i) + seeds.get((int) i + 1); j++) {
+                    long soil = parseMap(seedToSoilMap, j);
+                    long fertilizer = parseMap(soilToFertilizerMap, soil);
+                    long water = parseMap(fertilizerToWaterMap, fertilizer);
+                    long light = parseMap(waterToLightMap, water);
+                    long temperature = parseMap(lightToTemperatureMap, light);
+                    long humidity = parseMap(temperatureToHumidityMap, temperature);
+                    long location = parseMap(humidityToLocationMap, humidity);
+
+                    if (location < lowestLocation) {
+                        lowestLocation = location;
+                    }
+                }
             }
         }
 
