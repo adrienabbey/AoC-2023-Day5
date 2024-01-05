@@ -1,6 +1,7 @@
 /* Advent of Code 2023, Day 5: If You Give A Seed A Fertilizer
  * Adrien Abbey, Jan. 2024
  * Part One Solution: 218513636
+ * Part Two Solution: 81956384
  */
 
 import java.io.File;
@@ -11,8 +12,8 @@ import java.util.Scanner;
 
 class day5 {
     /* Global Variables */
-    public static String inputFileName = "example-input.txt";
-    public static boolean testing = true;
+    public static String inputFileName = "input.txt";
+    public static boolean testing = false;
     public static boolean partTwo = true;
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -142,12 +143,12 @@ class day5 {
 
             // Treat the seed values as pairs.
             // Start with the first index value, adding two each round:
-            for (int i = 0; i < seeds.size(); i += 2) {
+            for (long i = 0; i < seeds.size(); i += 2) {
                 // The second value of a seed pair is the range of seed values
                 // to calculate. Calculate every seed value, from the starting
                 // seed to the ending seed:
-                for (long j = seeds.get(i); j <= seeds.get(i) + seeds.get((int) i + 1); j++) {
-                    long soil = parseMap(seedToSoilMap, (int) j);
+                for (long j = seeds.get((int) i); j <= seeds.get((int) i) + seeds.get((int) i + 1); j++) {
+                    long soil = parseMap(seedToSoilMap, j);
                     long fertilizer = parseMap(soilToFertilizerMap, soil);
                     long water = parseMap(fertilizerToWaterMap, fertilizer);
                     long light = parseMap(waterToLightMap, water);
