@@ -102,6 +102,40 @@ class day5 {
                 System.out.println(" - " + Arrays.toString(intArr));
             }
         }
+
+        // We want to find the lowest location number of any of the initial seeds:
+        int lowestLocation = Integer.MAX_VALUE;
+
+        // Start finding the location of each seed:
+        for (int seed : seeds) {
+            int soil = parseMap(seedToSoilMap, seed);
+            int fertilizer = parseMap(soilToFertilizerMap, soil);
+            int water = parseMap(fertilizerToWaterMap, fertilizer);
+            int light = parseMap(waterToLightMap, water);
+            int temperature = parseMap(lightToTemperatureMap, light);
+            int humidity = parseMap(temperatureToHumidityMap, temperature);
+            int location = parseMap(humidityToLocationMap, humidity);
+
+            // Test code:
+            if (testing) {
+                System.out.println("Seed: " + seed);
+                System.out.println(" Soil: " + soil);
+                System.out.println(" Fertilizer: " + fertilizer);
+                System.out.println(" Water: " + water);
+                System.out.println(" Light: " + light);
+                System.out.println(" Temperature: " + temperature);
+                System.out.println(" Humidity: " + humidity);
+                System.out.println(" Location: " + location);
+            }
+
+            // Update the lowest location if necesary:
+            if (location < lowestLocation) {
+                lowestLocation = location;
+            }
+        }
+
+        // Print out the result:
+        System.out.println("The lowest location number is: " + lowestLocation);
     }
 
     public static ArrayList<String> loadInputStrings() throws FileNotFoundException {
@@ -197,5 +231,38 @@ class day5 {
 
         // Return the map value array list:
         return mapValues;
+    }
+
+    public static int parseMap(ArrayList<Integer[]> mapList, int input) {
+        // Parses the given input to the given map, returning the mapped value.
+
+        // Maps have three numbers: `destination range start`, `source range
+        // start`, and `range length`. If the input value is within the source
+        // range start and range length, it is mapped to the desintation range
+        // start and offset by the difference from the source range start.
+        // If the input does not fall within the source range, return the input
+        // value unmodified.
+
+        // There are multiple maps. I'm assuming that each map is exclusive,
+        // and that the first map to match the input is the only one that will.
+
+        // For each map:
+        for (Integer[] map : mapList) {
+
+            // For readability, use variables:
+            int destinationRangeStart = map[0];
+            int sourceRangeStart = map[1];
+            int sourceRangeEnd = map[1] + map[2] - 1;
+
+            // If the input is within the source range:
+            if (input >= sourceRangeStart && input <= sourceRangeEnd) {
+                // Adjust the input value accordingly:
+                int adjustedInput = destinationRangeStart + (input - sourceRangeStart);
+                return adjustedInput;
+            }
+        }
+
+        // No valid map adjustment, return unmodified input:
+        return input;
     }
 }
