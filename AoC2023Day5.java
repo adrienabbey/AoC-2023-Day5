@@ -9,26 +9,29 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-class day5 {
+class AoC2023Day5 {
     /* Global Variables */
     public static String inputFileName = "input.txt";
     public static boolean testing = false;
     public static boolean partTwo = true;
 
-    public static void main(String[] args) throws FileNotFoundException {
+    // Create array lists to hold relevant data:
+    public static ArrayList<Long> seeds = null;
+    public static ArrayList<Long[]> seedToSoilMap = null;
+    public static ArrayList<Long[]> soilToFertilizerMap = null;
+    public static ArrayList<Long[]> fertilizerToWaterMap = null;
+    public static ArrayList<Long[]> waterToLightMap = null;
+    public static ArrayList<Long[]> lightToTemperatureMap = null;
+    public static ArrayList<Long[]> temperatureToHumidityMap = null;
+    public static ArrayList<Long[]> humidityToLocationMap = null;
+
+    public static void main(String[] args) throws FileNotFoundException, InterruptedException, ExecutionException {
         // Load the input into an array of strings:
         ArrayList<String> inputStrings = loadInputStrings();
-
-        // Create array lists to hold relevant data:
-        ArrayList<Long> seeds = null;
-        ArrayList<Long[]> seedToSoilMap = null;
-        ArrayList<Long[]> soilToFertilizerMap = null;
-        ArrayList<Long[]> fertilizerToWaterMap = null;
-        ArrayList<Long[]> waterToLightMap = null;
-        ArrayList<Long[]> lightToTemperatureMap = null;
-        ArrayList<Long[]> temperatureToHumidityMap = null;
-        ArrayList<Long[]> humidityToLocationMap = null;
 
         // Parse the input into a usable format:
         for (int i = 0; i < inputStrings.size(); i++) {
@@ -141,24 +144,31 @@ class day5 {
         } else {
             // Using part two's method.
 
+            // Configure a Future object to grab results from Callable threads:
+            int threadCount = seeds.size() / 2;
+            System.out.println(" Using " + threadCount + " threads.");
+            FutureTask<Long>[] threadedTasks = new FutureTask[threadCount];
+
             // Treat the seed values as pairs.
             // Start with the first index value, adding two each round:
-            for (long i = 0; i < seeds.size(); i += 2) {
+            for (int i = 0; i < threadCount; i += 1) {
                 // The second value of a seed pair is the range of seed values
                 // to calculate. Calculate every seed value, from the starting
                 // seed to the ending seed:
-                for (long j = seeds.get((int) i); j <= seeds.get((int) i) + seeds.get((int) i + 1); j++) {
-                    long soil = parseMap(seedToSoilMap, j);
-                    long fertilizer = parseMap(soilToFertilizerMap, soil);
-                    long water = parseMap(fertilizerToWaterMap, fertilizer);
-                    long light = parseMap(waterToLightMap, water);
-                    long temperature = parseMap(lightToTemperatureMap, light);
-                    long humidity = parseMap(temperatureToHumidityMap, temperature);
-                    long location = parseMap(humidityToLocationMap, humidity);
 
-                    if (location < lowestLocation) {
-                        lowestLocation = location;
-                    }
+                // Create a Callable object to thread each seed pair:
+                // https://www.geeksforgeeks.org/callable-future-java/
+                Callable<Long> callable = new AoC2023Day5Callable(seeds.get(i * 2),
+                        seeds.get(i * 2) + seeds.get(i * 2 + 1));
+                threadedTasks[i] = new FutureTask<Long>(callable);
+                Thread t = new Thread(threadedTasks[i]);
+                t.start();
+            }
+
+            // Grab the results and determine the lowest location:
+            for (int i = 0; i < seeds.size() / 2; i++) {
+                if (threadedTasks[i].get() < lowestLocation) {
+                    lowestLocation = threadedTasks[i].get();
                 }
             }
         }
